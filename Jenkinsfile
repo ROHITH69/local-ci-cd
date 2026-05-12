@@ -8,6 +8,15 @@ pipeline {
 
     stages {
 
+        stage('Verify Tools') {
+            steps {
+                sh 'docker --version'
+                sh 'python3 --version'
+                sh 'trivy --version'
+                sh 'conftest --version'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh './scripts/setup.sh'
@@ -68,6 +77,7 @@ pipeline {
         }
 
         always {
+            archiveArtifacts artifacts: 'reports/*', fingerprint: true
             cleanWs()
         }
     }

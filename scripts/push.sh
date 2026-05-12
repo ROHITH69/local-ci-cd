@@ -4,6 +4,6 @@ source config/app.env
 
 echo "Pushing image to local registry..."
 
-docker push localhost:5001/${IMAGE_NAME}
+docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 
 echo "Image pushed successfully."

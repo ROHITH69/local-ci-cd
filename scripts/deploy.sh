@@ -9,8 +9,8 @@ docker rm -f ${CONTAINER_NAME} || true
 echo "Starting application container..."
 
 docker run -d \
-  --name ${CONTAINER_NAME} \
-  -p ${HOST_PORT}:${APP_PORT} \
-  ${IMAGE_NAME}
+--name ${CONTAINER_NAME} \
+-p ${HOST_PORT}:${APP_PORT} \
+${IMAGE_NAME}:${IMAGE_TAG}
 
 echo "Deployment completed successfully."
