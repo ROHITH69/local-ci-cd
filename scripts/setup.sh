@@ -2,7 +2,7 @@
 
 echo "Installing dependencies..."
 
-pip install -r app/requirements.txt
+pip install -r app/requirements.txt || exit 1
 
 echo "Making scripts executable..."
 
