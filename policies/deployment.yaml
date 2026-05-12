@@ -1,10 +1,13 @@
 apiVersion: apps/v1
-
 kind: Deployment
 
 metadata:
   name: sample-python-deployment
   namespace: development
+
+  labels:
+    app: sample-python-app
+    environment: development
 
 spec:
   replicas: 1
@@ -17,20 +20,39 @@ spec:
     metadata:
       labels:
         app: sample-python-app
+        environment: development
 
     spec:
       containers:
-      - name: sample-python-container
+        - name: sample-python-container
 
-        image: sample-python-app
+          image: localhost:5001/sample-python-app:v1
 
-        ports:
-        - containerPort: 5000
+          imagePullPolicy: Always
 
-        securityContext:
-          privileged: false
+          ports:
+            - containerPort: 5000
 
-        resources:
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
+          securityContext:
+            privileged: false
+
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+
+            initialDelaySeconds: 15
+            periodSeconds: 20

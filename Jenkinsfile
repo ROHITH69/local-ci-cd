@@ -1,12 +1,28 @@
 pipeline {
-
     agent any
 
     options {
         timestamps()
+        timeout(time: 15, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    environment {
+        IMAGE_NAME = "sample-python-app"
+        IMAGE_TAG = "v1"
+        REGISTRY = "localhost:5001"
+        KUBECONFIG = "${WORKSPACE}/kubeconfig"
     }
 
     stages {
+
+        stage('Clone Repository') {
+            steps {
+                retry(2) {
+                    checkout scm
+                }
+            }
+        }
 
         stage('Verify Tools') {
             steps {
@@ -14,60 +30,85 @@ pipeline {
                 sh 'python3 --version'
                 sh 'trivy --version'
                 sh 'conftest --version'
+                sh 'kubectl version --client'
+            }
+        }
+
+        stage('Code Validation') {
+            steps {
+                sh 'test -d app'
+                sh 'test -d tests'
+                sh 'test -f Dockerfile'
+                sh 'python3 -m py_compile app/app.py'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh './scripts/setup.sh'
+                retry(2) {
+                    sh './scripts/setup.sh'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh './scripts/test.sh'
+                retry(2) {
+                    sh './scripts/test.sh'
+                }
             }
         }
 
         stage('Lint Check') {
             steps {
-                sh './scripts/lint.sh'
+                retry(2) {
+                    sh './scripts/lint.sh'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh './scripts/build.sh'
+                retry(2) {
+                    sh './scripts/build.sh'
+                }
             }
         }
 
         stage('Security Scan') {
             steps {
-                sh './scripts/scan.sh'
+                retry(2) {
+                    sh './scripts/scan.sh'
+                }
             }
         }
 
         stage('Push Image') {
             steps {
-                sh './scripts/push.sh'
+                retry(2) {
+                    sh './scripts/push.sh'
+                }
             }
         }
 
         stage('OPA Policy Validation') {
             steps {
-                sh 'conftest test policies/deployment.yaml --policy policies/'
+                retry(2) {
+                    sh 'conftest test policies/deployment.yaml --policy policies/'
+                }
             }
         }
 
-        stage('Deploy Container') {
+        stage('Kubernetes Deployment') {
             steps {
-                sh './scripts/deploy.sh'
+                retry(2) {
+                    sh 'kubectl apply -f policies/deployment.yaml'
+                }
             }
         }
     }
 
     post {
-
         success {
             echo 'Pipeline completed successfully.'
         }
