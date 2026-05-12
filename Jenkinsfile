@@ -2,11 +2,15 @@ pipeline {
 
     agent any
 
+    options {
+        timestamps()
+    }
+
     stages {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r app/requirements.txt'
+                sh './scripts/setup.sh'
             }
         }
 
@@ -34,6 +38,12 @@ pipeline {
             }
         }
 
+        stage('Push Image') {
+            steps {
+                sh './scripts/push.sh'
+            }
+        }
+
         stage('OPA Policy Validation') {
             steps {
                 sh 'conftest test policies/deployment.yaml --policy policies/'
@@ -44,6 +54,21 @@ pipeline {
             steps {
                 sh './scripts/deploy.sh'
             }
+        }
+    }
+
+    post {
+
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }

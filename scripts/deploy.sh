@@ -1,14 +1,16 @@
 #!/bin/bash
 
-PORT=5000
+source config/app.env
 
-while docker ps --format '{{.Ports}}' | grep -q "0.0.0.0:$PORT->"
-do
-    PORT=$((PORT+1))
-done
+echo "Removing existing container if present..."
 
-echo "Using port $PORT"
+docker rm -f ${CONTAINER_NAME} || true
 
-docker run -d -p $PORT:5000 rohith-python-app
+echo "Starting application container..."
 
-echo "Application running at http://localhost:$PORT"
+docker run -d \
+  --name ${CONTAINER_NAME} \
+  -p ${HOST_PORT}:${APP_PORT} \
+  ${IMAGE_NAME}
+
+echo "Deployment completed successfully."

@@ -1,25 +1,34 @@
 apiVersion: apps/v1
+
 kind: Deployment
 
 metadata:
-  name: python-app
+  name: sample-python-deployment
+  namespace: development
 
 spec:
   replicas: 1
 
   selector:
     matchLabels:
-      app: python-app
+      app: sample-python-app
 
   template:
     metadata:
       labels:
-        app: python-app
+        app: sample-python-app
 
     spec:
       containers:
-      - name: python-app
-        image: rohith-python-app
+      - name: sample-python-container
+
+        image: sample-python-app
+
+        ports:
+        - containerPort: 5000
+
+        securityContext:
+          privileged: false
 
         resources:
           limits:

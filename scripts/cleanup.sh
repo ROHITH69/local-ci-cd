@@ -1,4 +1,13 @@
 #!/bin/bash
 
-docker stop $(docker ps -aq)
-docker rm $(docker ps -aq)
+source config/app.env
+
+echo "Stopping application container..."
+
+docker stop ${CONTAINER_NAME} || true
+
+echo "Removing application container..."
+
+docker rm ${CONTAINER_NAME} || true
+
+echo "Cleanup completed successfully."
