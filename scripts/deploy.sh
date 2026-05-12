@@ -14,3 +14,16 @@ docker run -d \
 ${IMAGE_NAME}:${IMAGE_TAG}
 
 echo "Deployment completed successfully."
+
+
+```#!/bin/bash
+set -e
+echo "Deploying application to Kubernetes..."
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl rollout status deployment/myapp -n devenv
+kubectl get pods -n devenv
+kubectl get svc -n devenv
+echo "Deployment successful!"
+```
