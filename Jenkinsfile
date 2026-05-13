@@ -51,18 +51,31 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                retry(2) {
-                    sh './scripts/test.sh'
-                }
-            }
-        }
+        stage('Quality Checks (Parallel)') {
+            parallel {
 
-        stage('Lint Check') {
-            steps {
-                retry(2) {
-                    sh './scripts/lint.sh'
+                stage('Run Tests') {
+                    steps {
+                        retry(2) {
+                            sh './scripts/test.sh'
+                        }
+                    }
+                }
+
+                stage('Lint Check') {
+                    steps {
+                        retry(2) {
+                            sh './scripts/lint.sh'
+                        }
+                    }
+                }
+
+                stage('Security Scan') {
+                    steps {
+                        retry(2) {
+                            sh './scripts/scan.sh'
+                        }
+                    }
                 }
             }
         }
@@ -75,26 +88,23 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            steps {
-                retry(2) {
-                    sh './scripts/scan.sh'
-                }
-            }
-        }
+        stage('Push & Policy Validation (Parallel)') {
+            parallel {
 
-        stage('Push Image') {
-            steps {
-                retry(2) {
-                    sh './scripts/push.sh'
+                stage('Push Image') {
+                    steps {
+                        retry(2) {
+                            sh './scripts/push.sh'
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('OPA Policy Validation') {
-            steps {
-                retry(2) {
-                    sh 'conftest test policies/deployment.yaml --policy policies/'
+                stage('OPA Policy Validation') {
+                    steps {
+                        retry(2) {
+                            sh 'conftest test policies/deployment.yaml --policy policies/'
+                        }
+                    }
                 }
             }
         }
